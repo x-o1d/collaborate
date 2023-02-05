@@ -1,0 +1,18 @@
+.wins {
+  display: inline-flex;
+  flex-direction: column;
+  width: 300px;
+  padding: 10px;
+  border: 1px solid black;
+}
+
+.button {
+  margin: 5px;
+  background-color: black;
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  text-align: center;
+  margin-top: 20px;
+  cursor: pointer;
+}
