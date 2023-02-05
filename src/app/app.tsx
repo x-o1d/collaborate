@@ -14,21 +14,19 @@ const MAX_CHANGE_DIRECTION = toRadian(120);
 const HIT_PROBABILITY = 0.5;
 const HIT_HEALTH_COST = 2;
 
-const TOTAL_GAMES = 20;
-const GAME_SPEED = 10;
+const TOTAL_GAMES = 100;
+const GAME_SPEED = 15;
 const GAME_LENGTH = 20000;
 
 export const teams = [
   {
     name: 'amused',
     color: 'rgb(10, 120, 76)',
-    collaborate: 1,
     wins: 0,
   },
   {
     name: 'sportsbet',
     color: 'rgb(255, 0, 0)',
-    collaborate: 0,
     wins: 0,
   },
 ];
@@ -60,6 +58,8 @@ export function App() {
   const [render, setRender] = useState(false);
   const [gameCount, setGameCount] = useState(0);
   const [players, setPlayers] = useState(() => resetPlayers(0));
+
+  const [collaborate, setCollaborate] = useState([1, 0]);
 
   const gameRunning = useRef(false);
   const gameStartedAt = useRef(new Date().getTime());
@@ -120,7 +120,7 @@ export function App() {
             if (distance < minDistance) {
               if (
                 distance > PLAYER_RANGE &&
-                distance < PLAYER_RANGE * 5 * teams[player.team].collaborate
+                distance < PLAYER_RANGE * 5 * collaborate[player.team]
               ) {
                 minDistance = distance;
                 minIndex = index;
@@ -153,14 +153,17 @@ export function App() {
         player.direction = player.direction % (2 * Math.PI);
       }
     });
-  }, [players]);
+  }, [players, collaborate]);
 
   const checkAndFire = useCallback(() => {
     players.forEach((player1) => {
+      // ignore inactive
       if (!player1.alive) return;
       let shotFired = false;
       players.forEach((player2) => {
+        // a player gets only one shot per turn
         if (shotFired) return;
+        // ignore inactive
         if (!player2.alive) return;
         // ignore self
         if (player1.id === player2.id) return;
@@ -168,11 +171,11 @@ export function App() {
         if (player1.team === player2.team) return;
 
         // if the engaged opponent is dead resort to exploring
-        if (player2.health <= 0 && player1.state === player2.id) {
-          player1.state = -1;
-          player1.shoot = undefined;
-          return;
-        }
+        // if (player2.health <= 0 && player1.state === player2.id) {
+        //   player1.state = -1;
+        //   player1.shoot = undefined;
+        //   return;
+        // }
 
         const distance = Math.sqrt(
           Math.pow(player1.location.x - player2.location.x, 2) +
@@ -192,6 +195,9 @@ export function App() {
           } else {
             player1.shoot = undefined;
           }
+        } else {
+          player1.state = -1;
+          player1.shoot = undefined;
         }
       });
     });
@@ -311,12 +317,49 @@ export function App() {
           <Player key={player.id} playerData={player} />
         ))}
       </div>
+      <div className="description">
+        <div>
+          When collaboration is at max, a player responds to an assist call
+          within five times it's firing range.
+        </div>
+        <div>
+          When collaboration is at min, a player responds to an assist call only
+          within it's firing range.
+        </div>
+        <div>A red line is a shot by the sportsbet team</div>
+        <div>A green line is a shot by the sportsbet team</div>
+        <div>A blue line is a player responding to an assist call</div>
+      </div>
       <div className="wins">
         {teams.map((team, index) => (
           <div key={index} style={{ color: team.color }}>
             {`Team ${team.name} wins: ${(team.wins / gameCount) * 100}%`}
           </div>
         ))}
+        <div className="controls">
+          <div>Collaborate amused</div>
+          <input
+            disabled={gameRunning.current}
+            type="range"
+            value={collaborate[0] * 100}
+            min="0"
+            max="100"
+            onChange={(e) => {
+              setCollaborate([parseInt(e.target.value) / 100, collaborate[1]]);
+            }}
+          />
+          <div>Collaborate sportsbet</div>
+          <input
+            disabled={gameRunning.current}
+            type="range"
+            value={collaborate[1] * 100}
+            min="0"
+            max="100"
+            onChange={(e) => {
+              setCollaborate([collaborate[0], parseInt(e.target.value) / 100]);
+            }}
+          />
+        </div>
         <div className="button" onClick={() => startGames()}>
           Start game
         </div>

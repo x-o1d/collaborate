@@ -21,6 +21,7 @@ export function Fire({ color, location, shoot }: FireProps) {
             x2={50 + deltaX}
             y2={50 + deltaY}
             stroke={color}
+            stroke-width="3"
           />
         </svg>
       </div>

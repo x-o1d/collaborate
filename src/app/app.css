@@ -16,3 +16,19 @@
   margin-top: 20px;
   cursor: pointer;
 }
+
+.controls {
+  margin-top: 20px;
+}
+
+.description {
+  display: inline-flex;
+  flex-direction: column;
+  width: 300px;
+  padding: 5px;
+  font-weight: 500;
+}
+
+.description > div {
+  margin-bottom: 10px;
+}
